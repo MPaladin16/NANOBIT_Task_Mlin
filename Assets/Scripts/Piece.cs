@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private int owner; // 0 = Player 1, 1 = Player 2
+
     void Start()
     {
-        
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        sr.color = (owner == 0) ? Color.white : Color.red;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    //Get & Set
+    public int GetOwner() => owner;
+    public void SetOwner(int i) => owner = i;
 }

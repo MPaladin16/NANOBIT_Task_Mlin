@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class BoardPosition : MonoBehaviour
@@ -10,15 +11,23 @@ public class BoardPosition : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log($"Clicked on position {index}");
-
+        //Do Method depending on the GamePhase or if removing is true
         if(gameManager.IsRemoving())
         {
+            //destroy piece if selected piece is for an opposite player
             if (currentPiece != null && currentPiece.GetComponent<Piece>().GetOwner() != gameManager.GetCurrentPlayer())
             {
-                Destroy(currentPiece);
-                currentPiece = null;
-                gameManager.FinishRemove();
+                if (!gameManager.IsPartOfMill(index) || gameManager.AllOpponentPiecesInMills())
+                {
+                    Destroy(currentPiece);
+                    currentPiece = null;
+                    gameManager.FinishRemove();
+                }
+                else
+                {
+                    Debug.Log("Can't remove a piece that's in a mill (unless all are).");
+                    Debug.Log("Choose another piece");
+                }
             }
         }
         else if (gameManager.GetCurrentPhase() == GameManager.GamePhase.Placement)
@@ -35,6 +44,7 @@ public class BoardPosition : MonoBehaviour
     public bool IsOccupied => currentPiece != null;
     public GameObject GetPiece() => currentPiece;
     public void SetPiece(GameObject go) => currentPiece = go;
+    public int GetIndex() => index;
 
 
 }

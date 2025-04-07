@@ -22,18 +22,20 @@ public class GameManager : MonoBehaviour
         
     }
 
+    //Try to place a piece only works if position is not occupied and we are in placement phase
     public void TryPlacePiece(int positionIndex)
     {
         BoardPosition position = boardPositions[positionIndex].GetComponent<BoardPosition>();
         if (position.IsOccupied || currentPhase != GamePhase.Placement) return;
 
-
+        //Create object, add owner and set to a position
         GameObject piece = Instantiate(piecePrefab, boardPositions[positionIndex].position, Quaternion.identity);
         piece.GetComponent<Piece>().SetOwner(_currentPlayer);
         position.SetPiece(piece);
 
         _piecesToPlace[_currentPlayer]--;
 
+        //Check for mill in placement phase
         if (CheckForMill(positionIndex, _currentPlayer))
         {
             Debug.Log("Mill formet test.");
@@ -107,7 +109,7 @@ public class GameManager : MonoBehaviour
         //Move piece
         else
         {
-            //Each GO has its index in the name so decided to use that to get the index
+            //Get index of piece to see if it can be moved to the new place
             var currentIndex = FindPieceIndex(_selectedPiece);
             if (availableMoves[currentIndex].Contains(positionIndex))
             {
@@ -150,6 +152,53 @@ public class GameManager : MonoBehaviour
                 return i;
         }
         return -1;
+    }
+
+    //is a piece that is getting removed a part of the mill
+    public bool IsPartOfMill(int index)
+    {
+        int owner = boardPositions[index].GetComponent<BoardPosition>().GetPiece().GetComponent<Piece>().GetOwner();
+
+        foreach (var mill in mills)
+        {
+            if (System.Array.IndexOf(mill, index) >= 0)
+            {
+                bool fullMill = true;
+                foreach (var pos in mill)
+                {
+                    var bp = boardPositions[pos].GetComponent<BoardPosition>();
+                    if (bp.GetPiece() == null || bp.GetPiece().GetComponent<Piece>().GetOwner() != owner)
+                    {
+                        fullMill = false; 
+                        break;
+                    }
+                }
+
+                if (fullMill) return true; 
+            }
+        }
+
+        return false;
+    }
+
+    //are all the pieces of a player, parts of a mill
+    public bool AllOpponentPiecesInMills()
+    {
+        int opponent = 1 - _currentPlayer;
+
+        foreach (var pos in boardPositions)
+        {
+            if (pos.GetComponent<BoardPosition>().GetPiece() != null)
+            {
+                var piece = pos.GetComponent<BoardPosition>().GetPiece().GetComponent<Piece>();
+                if (piece.GetOwner() == opponent && !IsPartOfMill(pos.GetComponent<BoardPosition>().GetIndex()))
+                {
+                    return false; // There are some removable piece not in a Mill
+                }
+            }
+        }
+
+        return true; // All pieces are in mills
     }
 
     //Get & Set

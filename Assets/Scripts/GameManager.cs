@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -8,8 +9,10 @@ public class GameManager : MonoBehaviour
     public enum GamePhase { Placement, Movement, Flying }
     public GamePhase currentPhase = GamePhase.Placement;
 
-    public GameObject piecePrefab; 
-    public Transform[] boardPositions; 
+    [SerializeField] GameObject piecePrefab; 
+    [SerializeField] Transform[] boardPositions;
+
+    [SerializeField] UIManager uiManager;
 
     private int _currentPlayer = 0; 
     private int[] _piecesToPlace = { 9, 9 };
@@ -43,18 +46,18 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            SwitchTurnOrAdvancePhase();
+            SwitchTurnOrNextPhase();
         }
     }
 
-    void SwitchTurnOrAdvancePhase()
+    void SwitchTurnOrNextPhase()
     {
         if (currentPhase == GamePhase.Placement)
         {
             if (_piecesToPlace[0] == 0 && _piecesToPlace[1] == 0)
             {
                 currentPhase = GamePhase.Movement;
-                Debug.Log("Switching to Movement Phase!"); 
+                Debug.Log("Switching to Movement Phase!");
                 _currentPlayer = 1 - _currentPlayer;
                 Debug.Log("Switched to Player " + _currentPlayer);
             }
@@ -69,6 +72,25 @@ public class GameManager : MonoBehaviour
             _currentPlayer = 1 - _currentPlayer;
             Debug.Log("Switched to Player " + _currentPlayer);
         }
+        //Check if flying is enabled for the current player or go back to movement phase
+        if (CountPlayerPieces(_currentPlayer) == 3 && currentPhase != GamePhase.Placement)
+        {
+            currentPhase = GamePhase.Flying;
+            Debug.Log("Player " + _currentPlayer + " has the ability to fly pieces");
+        }
+        else if (currentPhase == GamePhase.Placement) { }
+        else { currentPhase = GamePhase.Movement; }
+
+        //Check if game is over
+        if (IsGameOver())
+        {
+            int p = 1 - _currentPlayer;
+            string s = (p == 0) ? "white" : "red";
+            Debug.Log("Player " + p + " with a color " + s + " won!");
+            uiManager.EndGame(p); // opponent wins
+            return;
+        }
+
     }
 
     private bool CheckForMill(int positionIndex, int player)
@@ -111,38 +133,48 @@ public class GameManager : MonoBehaviour
         {
             //Get index of piece to see if it can be moved to the new place
             var currentIndex = FindPieceIndex(_selectedPiece);
-            if (availableMoves[currentIndex].Contains(positionIndex))
+
+            bool canMove = false;
+            if (currentPhase == GamePhase.Flying)
             {
-                if (!pos.IsOccupied)
+                canMove = !pos.IsOccupied;
+            }
+            else
+            {
+                canMove = availableMoves[currentIndex].Contains(positionIndex) && !pos.IsOccupied;
+            }
+
+            if (canMove)
+            {
+                boardPositions[currentIndex].GetComponent<BoardPosition>().SetPiece(null);
+
+                _selectedPiece.transform.position = pos.transform.position;
+                pos.SetPiece(_selectedPiece);
+
+                if (CheckForMill(positionIndex, _currentPlayer))
                 {
-                    boardPositions[currentIndex].GetComponent<BoardPosition>().SetPiece(null);
-
-                    _selectedPiece.transform.position = pos.transform.position;
-                    pos.SetPiece(_selectedPiece);
-
-                    if (CheckForMill(positionIndex, _currentPlayer))
-                    {
-                        _isRemoving = true;
-                    }
-                    else
-                    {
-                        SwitchTurnOrAdvancePhase();
-                    }
-
-                    _selectedPiece = null;
+                    _isRemoving = true;
                 }
+                else
+                {
+                    SwitchTurnOrNextPhase();
+                 }
+
+                _selectedPiece = null;
             }
             else
             {
                 Debug.Log("Invalid move!");
                 _selectedPiece = null;
             }
+
         }
     }
     public void FinishRemove()
     {
         _isRemoving = false;
-        SwitchTurnOrAdvancePhase();
+
+        SwitchTurnOrNextPhase();
     }
     private int FindPieceIndex(GameObject piece)
     {
@@ -190,7 +222,7 @@ public class GameManager : MonoBehaviour
         {
             if (pos.GetComponent<BoardPosition>().GetPiece() != null)
             {
-                var piece = pos.GetComponent<BoardPosition>().GetPiece().GetComponent<Piece>();
+                Piece piece = pos.GetComponent<BoardPosition>().GetPiece().GetComponent<Piece>();
                 if (piece.GetOwner() == opponent && !IsPartOfMill(pos.GetComponent<BoardPosition>().GetIndex()))
                 {
                     return false; // There are some removable piece not in a Mill
@@ -201,11 +233,54 @@ public class GameManager : MonoBehaviour
         return true; // All pieces are in mills
     }
 
+    //Check if player has only 3 pieces left
+    private int CountPlayerPieces(int player)
+    {
+        int count = 0;
+        foreach (var pos in boardPositions)
+        {
+            if (pos.GetComponent<BoardPosition>().GetPiece() != null && pos.GetComponent<BoardPosition>().GetPiece().GetComponent<Piece>().GetOwner() == player)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+    //Checks if game is over
+    private bool IsGameOver()
+    {
+        if (currentPhase == GamePhase.Placement) 
+            return false;
+        int pieces = CountPlayerPieces(_currentPlayer);
+        if (pieces < 3) 
+            return true;
+
+        if (currentPhase == GamePhase.Flying)
+            return false; 
+
+        //If still in movement phase, check if any legal move are available
+        foreach (var pos in boardPositions)
+        {
+            int from = 0;
+            var bp = pos.GetComponent<BoardPosition>();
+            if (bp.GetPiece() != null && bp.GetPiece().GetComponent<Piece>().GetOwner() == _currentPlayer)
+            {
+                from = bp.GetIndex();
+                foreach (int to in availableMoves[from])
+                {
+                    if (!boardPositions[to].GetComponent<BoardPosition>().IsOccupied)
+                        return false; // move exists
+                }
+            }
+        }
+
+        return true; // no legal moves and game is over
+    }
     //Get & Set
     public int GetCurrentPlayer() => _currentPlayer;
     public GamePhase GetCurrentPhase() => currentPhase;
     public bool IsRemoving() => _isRemoving;
-
+    public bool IsGameOverFlag() => uiManager.IsGameOverFlag();
 
     //Hardcoded things as regions
     #region mills

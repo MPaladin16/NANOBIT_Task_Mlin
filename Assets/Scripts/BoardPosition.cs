@@ -11,8 +11,10 @@ public class BoardPosition : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (gameManager.IsGameOverFlag()) return;
+
         //Do Method depending on the GamePhase or if removing is true
-        if(gameManager.IsRemoving())
+        if (gameManager.IsRemoving())
         {
             //destroy piece if selected piece is for an opposite player
             if (currentPiece != null && currentPiece.GetComponent<Piece>().GetOwner() != gameManager.GetCurrentPlayer())
@@ -38,6 +40,10 @@ public class BoardPosition : MonoBehaviour
         {
             gameManager.HandleMovementClick(index);
         }
+        else if (gameManager.GetCurrentPhase() == GameManager.GamePhase.Flying)
+        {
+            gameManager.HandleMovementClick(index); 
+        }
     }
 
     //Get & Set
@@ -45,6 +51,5 @@ public class BoardPosition : MonoBehaviour
     public GameObject GetPiece() => currentPiece;
     public void SetPiece(GameObject go) => currentPiece = go;
     public int GetIndex() => index;
-
 
 }

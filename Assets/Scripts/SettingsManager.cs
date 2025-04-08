@@ -12,6 +12,7 @@ public class SettingsManager : MonoBehaviour
     [SerializeField] TMP_InputField player2NameField;
 
     [SerializeField] Button[] btsList;
+    [SerializeField] GameObject[] highlightList;
 
     private int _colorValueP1, _colorValueP2;
 
@@ -21,7 +22,10 @@ public class SettingsManager : MonoBehaviour
         player2NameField.text = "Player 2";
         _colorValueP1 = 0;
         _colorValueP2 = 1;
-        settingsPanel.SetActive(false); 
+
+        UpdateHighlights(0);
+        UpdateHighlights(3);
+        settingsPanel.SetActive(false);
     }
     public void OpenSettings()
     {
@@ -61,7 +65,8 @@ public class SettingsManager : MonoBehaviour
             Debug.LogWarning("Players cannot have the same color!");
             _colorValueP1 = 0;
             _colorValueP2 = 1;
-
+            UpdateHighlights(0);
+            UpdateHighlights(3);
             return false;
         }
 
@@ -82,7 +87,27 @@ public class SettingsManager : MonoBehaviour
             case 8: _colorValueP1 = 4; break;
             case 9: _colorValueP2 = 4; break;
         }
+        UpdateHighlights(i);
         ValidateSettings();
+    }
+
+    private void UpdateHighlights(int i)
+    {
+        if (i % 2 == 0)
+        {
+            for (int x = 0; x <= 8; x += 2) 
+            {
+                highlightList[x].SetActive(false);
+            }
+        }
+        else 
+        {
+            for (int x = 1; x <= 9; x += 2)
+            {
+                highlightList[x].SetActive(false);
+            }
+        }
+        highlightList[i].SetActive(true);
     }
 
 }

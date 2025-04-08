@@ -7,8 +7,10 @@ public class Piece : MonoBehaviour
     private Transform _highlight;
     void Start()
     {
+
+        GameManager gm = FindFirstObjectByType<GameManager>();
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        sr.color = (owner == 0) ? Color.white : Color.red;
+        sr.color = (owner == 0) ? gm.GetPlayer1Color() : gm.GetPlayer2Color();
         _highlight = transform.Find("Highlight");
     }
 

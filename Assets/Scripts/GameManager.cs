@@ -20,9 +20,21 @@ public class GameManager : MonoBehaviour
     private bool _isRemoving = false;
     private GameObject _selectedPiece = null;
 
+    //Additional task - Changing colors/names
+    private string[] _playerName = new string[2];
+    private UnityEngine.Color[] _playerColor = new UnityEngine.Color[2];
+
+    int p1, p2;
     void Start()
     {
-        
+        _playerName[0] = PlayerPrefs.GetString("Player1Name", "Player 1");
+        _playerName[1] = PlayerPrefs.GetString("Player2Name", "Player 2");
+        p1 = PlayerPrefs.GetInt("Player1Color", 0);
+        p2 = PlayerPrefs.GetInt("Player2Color", 1);
+        _playerColor[0] = playerColorList[p1];
+        _playerColor[1] = playerColorList[p2];
+
+        uiManager.UpdateTurnText(_playerName[_currentPlayer], _playerColor[_currentPlayer]);
     }
 
     //Try to place a piece only works if position is not occupied and we are in placement phase
@@ -95,7 +107,7 @@ public class GameManager : MonoBehaviour
         }
 
         //Change text
-        uiManager.UpdateTurnText(_currentPlayer);
+        uiManager.UpdateTurnText(_playerName[_currentPlayer], _playerColor[_currentPlayer]);
         int piecesLeft = _piecesToPlace[_currentPlayer];
         uiManager.UpdateInstruction(currentPhase == GamePhase.Placement ? $"Place a piece, {piecesLeft} left" :
                                     currentPhase == GamePhase.Movement ? "Move a piece" :
@@ -361,6 +373,8 @@ public class GameManager : MonoBehaviour
     public bool IsRemoving() => _isRemoving;
     public bool IsGameOverFlag() => uiManager.IsGameOverFlag();
 
+    public UnityEngine.Color GetPlayer1Color() => playerColorList[p1];
+    public UnityEngine.Color GetPlayer2Color() => playerColorList[p2];
     //Hardcoded things as regions
     #region mills
     private int[][] mills = new int[][]
@@ -415,5 +429,15 @@ public class GameManager : MonoBehaviour
 };
     #endregion
 
+    #region playerColors
+    private UnityEngine.Color[] playerColorList = new UnityEngine.Color[]
+    {
+        UnityEngine.Color.white,
+        UnityEngine.Color.red,
+        UnityEngine.Color.yellow,
+        UnityEngine.Color.cyan,
+        UnityEngine.Color.magenta,
 
+    };
+    #endregion
 }

@@ -14,7 +14,6 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        UpdateTurnText(0);
         UpdateInstruction("Place a piece, 9 left");
     }
     public void EndGame(int winner)
@@ -26,11 +25,10 @@ public class UIManager : MonoBehaviour
         winText.color = (winner == 0) ? Color.white : Color.red;
         winPanel.GetComponent<Animator>().SetTrigger("Open");
     }
-    public void UpdateTurnText(int currentPlayer)
+    public void UpdateTurnText(string playerName, Color playerColor)
     {
-        string color = (currentPlayer == 0) ? "White" : "Red";
-        PhaseText.text = $"Player: {color}";
-        PhaseText.color = (currentPlayer == 0) ? Color.white : Color.red;
+        PhaseText.text = playerName;
+        PhaseText.color = playerColor;
     }
 
     public void UpdateInstruction(string text)

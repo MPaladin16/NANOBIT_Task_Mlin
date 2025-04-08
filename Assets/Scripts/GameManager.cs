@@ -43,6 +43,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Mill formet test.");
             _isRemoving = true;
+            uiManager.UpdateInstruction("Remove an opponent's piece");
+            HighlightRemovablePieces();
         }
         else
         {
@@ -72,6 +74,7 @@ public class GameManager : MonoBehaviour
             _currentPlayer = 1 - _currentPlayer;
             Debug.Log("Switched to Player " + _currentPlayer);
         }
+
         //Check if flying is enabled for the current player or go back to movement phase
         if (CountPlayerPieces(_currentPlayer) == 3 && currentPhase != GamePhase.Placement)
         {
@@ -90,6 +93,12 @@ public class GameManager : MonoBehaviour
             uiManager.EndGame(p); // opponent wins
             return;
         }
+
+        //Change text
+        uiManager.UpdateTurnText(_currentPlayer);
+        uiManager.UpdateInstruction(currentPhase == GamePhase.Placement ? "Place a piece" :
+                                    currentPhase == GamePhase.Movement ? "Move a piece" :
+                                    "Fly piece to any position");
 
     }
 
@@ -126,14 +135,38 @@ public class GameManager : MonoBehaviour
             if (pos.GetPiece() != null && pos.GetPiece().GetComponent<Piece>().GetOwner() == _currentPlayer)
             {
                 _selectedPiece = pos.GetPiece();
+                _selectedPiece.GetComponent<Piece>().SetHighlight(true);
+
+                int fromIndex = pos.GetIndex();
+
+                for (int i = 0; i < boardPositions.Length; i++)
+                {
+                    var bp = boardPositions[i].GetComponent<BoardPosition>();
+
+                    bool isGreen = false;
+
+                    if (currentPhase == GamePhase.Flying)
+                    {
+                        isGreen = !bp.IsOccupied;
+                    }
+                    else if (availableMoves[fromIndex].Contains(i) && !bp.IsOccupied)
+                    {
+                        isGreen = true;
+                    }
+
+                    if (isGreen)
+                    {
+                        bp.SetHighlight(UnityEngine.Color.green, true);
+                    }
+                }
             }
+
         }
         //Move piece
         else
         {
             //Get index of piece to see if it can be moved to the new place
             var currentIndex = FindPieceIndex(_selectedPiece);
-
             bool canMove = false;
             if (currentPhase == GamePhase.Flying)
             {
@@ -154,18 +187,27 @@ public class GameManager : MonoBehaviour
                 if (CheckForMill(positionIndex, _currentPlayer))
                 {
                     _isRemoving = true;
+                    uiManager.UpdateInstruction("Remove an opponent's piece");
+                    ClearAllHighlights();
+                    HighlightRemovablePieces();
                 }
                 else
                 {
                     SwitchTurnOrNextPhase();
-                 }
-
+                    ClearAllHighlights();
+                }
+                _selectedPiece.GetComponent<Piece>().SetHighlight(false);
                 _selectedPiece = null;
             }
             else
             {
                 Debug.Log("Invalid move!");
+                _selectedPiece.GetComponent<Piece>().SetHighlight(false);
                 _selectedPiece = null;
+                for (int i = 0; i < boardPositions.Length; i++)
+                {
+                    boardPositions[i].GetComponent<BoardPosition>().SetHighlight(UnityEngine.Color.clear, false);
+                }
             }
 
         }
@@ -173,7 +215,7 @@ public class GameManager : MonoBehaviour
     public void FinishRemove()
     {
         _isRemoving = false;
-
+        ClearAllHighlights();
         SwitchTurnOrNextPhase();
     }
     private int FindPieceIndex(GameObject piece)
@@ -276,6 +318,39 @@ public class GameManager : MonoBehaviour
 
         return true; // no legal moves and game is over
     }
+
+    public void ClearAllHighlights()
+    {
+        foreach (var bp in boardPositions)
+        {
+            bp.GetComponent<BoardPosition>().SetHighlight(UnityEngine.Color.clear, false);
+        }
+    }
+
+    public void HighlightRemovablePieces()
+    {
+        int opponent = 1 - _currentPlayer;
+        bool allInMills = AllOpponentPiecesInMills();
+
+        foreach (var bps in boardPositions)
+        {
+            var bp = bps.GetComponent<BoardPosition>();
+
+            if (bp.GetPiece() != null)
+            {
+                Piece piece = bp.GetPiece().GetComponent<Piece>();
+
+                if (piece.GetOwner() == opponent)
+                {
+                    if (!IsPartOfMill(bp.GetIndex()) || allInMills)
+                    {
+                        bp.SetHighlight(UnityEngine.Color.green, true);
+                    }
+                }
+            }
+        }
+    }
+
     //Get & Set
     public int GetCurrentPlayer() => _currentPlayer;
     public GamePhase GetCurrentPhase() => currentPhase;

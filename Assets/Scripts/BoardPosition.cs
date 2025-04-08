@@ -8,7 +8,11 @@ public class BoardPosition : MonoBehaviour
     [SerializeField] GameObject currentPiece;
 
     [SerializeField] GameManager gameManager;
-
+    private Transform _hColor;
+    private void Start()
+    {
+        _hColor = transform.GetChild(0).gameObject.transform;
+    }
     private void OnMouseDown()
     {
         if (gameManager.IsGameOverFlag()) return;
@@ -43,6 +47,17 @@ public class BoardPosition : MonoBehaviour
         else if (gameManager.GetCurrentPhase() == GameManager.GamePhase.Flying)
         {
             gameManager.HandleMovementClick(index); 
+        }
+    }
+
+    public void SetHighlight(Color color, bool value)
+    {
+        if (_hColor != null)
+        {
+            Color c = color;
+            c.a = 0.4f;
+            _hColor.GetComponent<SpriteRenderer>().color = c;
+            _hColor.gameObject.SetActive(value);
         }
     }
 

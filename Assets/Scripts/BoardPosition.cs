@@ -25,6 +25,7 @@ public class BoardPosition : MonoBehaviour
             {
                 if (!gameManager.IsPartOfMill(index) || gameManager.AllOpponentPiecesInMills())
                 {
+                    AudioManager.Instance.PlayClickSound();
                     Destroy(currentPiece);
                     currentPiece = null;
                     gameManager.FinishRemove();

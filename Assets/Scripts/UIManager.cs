@@ -10,6 +10,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject winPanel;
     [SerializeField] TextMeshProUGUI winText;
 
+    [SerializeField] GameManager gm;
+
     private bool _gameOver = false;
 
     private void Start()
@@ -18,11 +20,18 @@ public class UIManager : MonoBehaviour
     }
     public void EndGame(int winner)
     {
+        AudioManager.Instance.PlayWinSound();
         _gameOver = true;
         winPanel.SetActive(true);
-        string s = (winner == 0) ? "White" : "Red";
-        winText.text = $"{s} wins!";
-        winText.color = (winner == 0) ? Color.white : Color.red;
+
+        string name = PlayerPrefs.GetString(winner == 0 ? "Player1Name" : "Player2Name");
+        int colorIndex = PlayerPrefs.GetInt(winner == 0 ? "Player1Color" : "Player2Color");
+        
+        Color playerColor = (winner == 0 ? gm.GetPlayer1Color() : gm.GetPlayer2Color());
+
+        winText.text = $"{name} wins!";
+        winText.color = playerColor;
+
         winPanel.GetComponent<Animator>().SetTrigger("Open");
     }
     public void UpdateTurnText(string playerName, Color playerColor)

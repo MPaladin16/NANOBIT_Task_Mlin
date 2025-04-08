@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] Transform[] boardPositions;
 
     [SerializeField] UIManager uiManager;
-
+    [SerializeField] AudioManager audioManager;
     private int _currentPlayer = 0; 
     private int[] _piecesToPlace = { 9, 9 };
 
@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour
         GameObject piece = Instantiate(piecePrefab, boardPositions[positionIndex].position, Quaternion.identity);
         piece.GetComponent<Piece>().SetOwner(_currentPlayer);
         position.SetPiece(piece);
+
+        AudioManager.Instance.PlayPlaceSound();
 
         _piecesToPlace[_currentPlayer]--;
 
@@ -145,6 +147,7 @@ public class GameManager : MonoBehaviour
         //Select piece
         if (_selectedPiece == null)
         {
+            AudioManager.Instance.PlayPlaceSound();
             if (pos.GetPiece() != null && pos.GetPiece().GetComponent<Piece>().GetOwner() == _currentPlayer)
             {
                 _selectedPiece = pos.GetPiece();
@@ -181,6 +184,7 @@ public class GameManager : MonoBehaviour
             //Get index of piece to see if it can be moved to the new place
             var currentIndex = FindPieceIndex(_selectedPiece);
             bool canMove = false;
+            AudioManager.Instance.PlayPlaceSound();
             if (currentPhase == GamePhase.Flying)
             {
                 canMove = !pos.IsOccupied;
@@ -217,6 +221,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
+                AudioManager.Instance.PlayIllegalSound();
                 Debug.Log("Invalid move!");
                 _selectedPiece.GetComponent<Piece>().SetHighlight(false);
                 _selectedPiece = null;

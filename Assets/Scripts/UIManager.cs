@@ -52,7 +52,7 @@ public class UIManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         winPanel.GetComponent<Animator>().SetTrigger("Close");
-        SceneManager.LoadScene("MainMenuScene"); // your main menu scene name
+        SceneManager.LoadScene("MainMenuScene"); 
     }
     public bool IsGameOverFlag() => _gameOver;
 }

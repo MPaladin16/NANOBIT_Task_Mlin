@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -15,6 +16,21 @@ public class Piece : MonoBehaviour
     {
         if (_highlight != null)
             _highlight.gameObject.SetActive(value);
+    }
+
+    public IEnumerator MoveTo(Vector3 targetPosition, float duration = 0.25f)
+    {
+        Vector3 start = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            transform.position = Vector3.Lerp(start, targetPosition, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = targetPosition;
     }
 
     //Get & Set

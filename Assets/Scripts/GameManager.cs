@@ -182,7 +182,10 @@ public class GameManager : MonoBehaviour
             {
                 boardPositions[currentIndex].GetComponent<BoardPosition>().SetPiece(null);
 
-                _selectedPiece.transform.position = pos.transform.position;
+                //_selectedPiece.transform.position = pos.transform.position;
+                //Animirano pomicanje
+                StartCoroutine(_selectedPiece.GetComponent<Piece>().MoveTo(pos.transform.position));
+
                 pos.SetPiece(_selectedPiece);
 
                 if (CheckForMill(positionIndex, _currentPlayer))

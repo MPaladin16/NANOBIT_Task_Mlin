@@ -96,7 +96,8 @@ public class GameManager : MonoBehaviour
 
         //Change text
         uiManager.UpdateTurnText(_currentPlayer);
-        uiManager.UpdateInstruction(currentPhase == GamePhase.Placement ? "Place a piece" :
+        int piecesLeft = _piecesToPlace[_currentPlayer];
+        uiManager.UpdateInstruction(currentPhase == GamePhase.Placement ? $"Place a piece, {piecesLeft} left" :
                                     currentPhase == GamePhase.Movement ? "Move a piece" :
                                     "Fly piece to any position");
 

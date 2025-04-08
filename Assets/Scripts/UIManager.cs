@@ -7,22 +7,24 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI PhaseText;
     [SerializeField] TextMeshProUGUI MoveText;
-    [SerializeField] GameObject winGO;
+    [SerializeField] GameObject winPanel;
     [SerializeField] TextMeshProUGUI winText;
+
     private bool _gameOver = false;
 
     private void Start()
     {
         UpdateTurnText(0);
-        UpdateInstruction("Place a piece");
+        UpdateInstruction("Place a piece, 9 left");
     }
     public void EndGame(int winner)
     {
         _gameOver = true;
-        winGO.SetActive(true);
+        winPanel.SetActive(true);
         string s = (winner == 0) ? "White" : "Red";
         winText.text = $"{s} wins!";
         winText.color = (winner == 0) ? Color.white : Color.red;
+        winPanel.GetComponent<Animator>().SetTrigger("Open");
     }
     public void UpdateTurnText(int currentPlayer)
     {
@@ -37,7 +39,13 @@ public class UIManager : MonoBehaviour
     }
 
     public void RestartGame() {
+        winPanel.GetComponent<Animator>().SetTrigger("Close");
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void ReturnToMainMenu()
+    {
+        winPanel.GetComponent<Animator>().SetTrigger("Close");
+        SceneManager.LoadScene("MainMenuScene"); // your main menu scene name
     }
     public bool IsGameOverFlag() => _gameOver;
 }

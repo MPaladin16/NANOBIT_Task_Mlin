@@ -20,12 +20,12 @@ public class Piece : MonoBehaviour
 
     public IEnumerator MoveTo(Vector3 targetPosition, float duration = 0.25f)
     {
-        Vector3 start = transform.position;
+        Vector3 startPosition = transform.position;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
-            transform.position = Vector3.Lerp(start, targetPosition, elapsed / duration);
+            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
         }

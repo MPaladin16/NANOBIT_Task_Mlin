@@ -45,4 +45,9 @@ public class AudioManager : MonoBehaviour
     public void PlayIllegalSound() => PlaySound(IllegalMusic);
     public void PlayWinSound() => PlaySound(WinMusic);
     public void PlayClickSound() => PlaySound(ClickMusic);
+
+    public void OnGameEnd(object sender, WinEvent w) {
+        PlaySound(WinMusic);
+        Debug.Log("Win Music playing");
+    }
 }

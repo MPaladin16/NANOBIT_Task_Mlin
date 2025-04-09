@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
     private UnityEngine.Color[] _playerColor = new UnityEngine.Color[2];
 
     int p1, p2;
+
+    public event EventHandler<WinEvent> OnGameWon;
     void Start()
     {
         _playerName[0] = PlayerPrefs.GetString("Player1Name", "Player 1");
@@ -35,6 +37,14 @@ public class GameManager : MonoBehaviour
         _playerColor[1] = playerColorList[p2];
 
         uiManager.UpdateTurnText(_playerName[_currentPlayer], _playerColor[_currentPlayer]);
+
+        if (audioManager == null)
+        {
+            audioManager = FindFirstObjectByType<AudioManager>();
+        }
+
+        this.OnGameWon += audioManager.OnGameEnd;
+        this.OnGameWon += uiManager.OnGameEnd;
     }
 
     //Try to place a piece only works if position is not occupied and we are in placement phase
@@ -104,7 +114,8 @@ public class GameManager : MonoBehaviour
             int p = 1 - _currentPlayer;
             string s = (p == 0) ? "white" : "red";
             Debug.Log("Player " + p + " with a color " + s + " won!");
-            uiManager.EndGame(p); // opponent wins
+            //uiManager.EndGame(p); // opponent wins
+            OnGameWon?.Invoke(this, new WinEvent(p));
             return;
         }
 

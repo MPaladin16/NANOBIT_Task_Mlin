@@ -18,21 +18,23 @@ public class UIManager : MonoBehaviour
     {
         UpdateInstruction("Place a piece, 9 left");
     }
-    public void EndGame(int winner)
+    public void OnGameEnd(object sender, WinEvent w)
     {
-        AudioManager.Instance.PlayWinSound();
+        //AudioManager.Instance.PlayWinSound();
         _gameOver = true;
         winPanel.SetActive(true);
 
-        string name = PlayerPrefs.GetString(winner == 0 ? "Player1Name" : "Player2Name");
-        int colorIndex = PlayerPrefs.GetInt(winner == 0 ? "Player1Color" : "Player2Color");
+        string name = PlayerPrefs.GetString(w.winner == 0 ? "Player1Name" : "Player2Name");
+        int colorIndex = PlayerPrefs.GetInt(w.winner == 0 ? "Player1Color" : "Player2Color");
         
-        Color playerColor = (winner == 0 ? gm.GetPlayer1Color() : gm.GetPlayer2Color());
+        Color playerColor = (w.winner == 0 ? gm.GetPlayer1Color() : gm.GetPlayer2Color());
 
         winText.text = $"{name} wins!";
         winText.color = playerColor;
 
         winPanel.GetComponent<Animator>().SetTrigger("Open");
+
+        Debug.Log("WIN_UI_Canvas Opened");
     }
     public void UpdateTurnText(string playerName, Color playerColor)
     {
